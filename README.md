@@ -1,6 +1,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/YuanxinPan/PPPx_bin)
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/YuanxinPan/PPPx_bin/total)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue)](#)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12759169.svg)](https://doi.org/10.5281/zenodo.12759169)
 
 
 # PPPx\_bin
@@ -280,5 +281,15 @@ software, please create an [issue](https://github.com/YuanxinPan/PPPx_bin/issues
 
 ## License
 
-This project is licensed under the GPLv3 License - see the [LICENSE](LICENSE)
-file for details.
+PPPx is distributed as a **closed-source binary** and is **free for academic,
+research, and educational use only**. Commercial use and redistribution of the
+binary are **not permitted**. See the [LICENSE](LICENSE) file for the full terms.
+
+For commercial licensing or redistribution permissions, please contact the author.
+
+
+## Citation
+
+If you use PPPx in your work, please cite it via its Zenodo DOI:
+
+> Yuanxin Pan. *YuanxinPan/PPPx_bin*. Zenodo. https://doi.org/10.5281/zenodo.12759169
