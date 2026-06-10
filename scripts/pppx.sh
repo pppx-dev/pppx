@@ -6,9 +6,9 @@
 ##                                                                           ##
 ##  AUTHOR : Yuanxin Pan (yxpan.im@gmail.com)                                ##
 ##                                                                           ##
-##  VERSION: 1.0.0                                                           ##
+##  VERSION: 1.1.0                                                           ##
 ##                                                                           ##
-##    Copyright (C) 2025 by Yuanxin Pan                                      ##
+##    Copyright (C) 2026 by Yuanxin Pan                                      ##
 ##                                                                           ##
 ##    This program is free software: you can redistribute it and/or modify   ##
 ##    it under the terms of the GNU General Public License (version 3) as    ##
@@ -233,8 +233,9 @@ PrepareProducts() { # purpose: prepare products in working directory
 
     local ac="COD"
     local HOST="ftp://ftp.aiub.unibe.ch/CODE/$year"
+    local rapid="no"
     local sp3 clk erp obx bia ion
-    eval $(GetProductNames $mjd_mid $ac)
+    eval $(GetProductNames $mjd_mid $ac FIN)
 
     # VMF1 grids
     local vmf_args=""
@@ -249,8 +250,12 @@ PrepareProducts() { # purpose: prepare products in working directory
     local ion_args=""
     local ion_opt=$(GetConfigOption "iono" "$ctrl_file")
     if [ "$ion_opt" = "IONEX" ]; then
-        local ion_no_suffix=${ion%.*}
-        DownloadProduct ${products_dir}/${ion_no_suffix} $HOST/$ion || return 1
+        local ion_no_suffix=$(StripCompressSuffix $ion)
+        if ! DownloadProduct ${products_dir}/${ion_no_suffix} $HOST/$ion; then
+            UseRapidProducts $mjd_mid $ac || return 1
+            ion_no_suffix=$(StripCompressSuffix $ion)
+            DownloadProduct ${products_dir}/${ion_no_suffix} $HOST/$ion || return 1
+        fi
         ion_args="--ion ${products_dir}/${ion_no_suffix}"
     fi
 
@@ -258,7 +263,7 @@ PrepareProducts() { # purpose: prepare products in working directory
     local BRDC_HOST="ftp://gssc.esa.int/gnss/data/daily/${year}/brdc"
     local brdc=$(GetBrdcName $mjd_mid)
     if [ "$product_src" = "brdc" -o "$ion_opt" = "brdc" ]; then
-        local brdc_no_suffix=${brdc%.*}
+        local brdc_no_suffix=$(StripCompressSuffix $brdc)
         local nav_args="--nav ${products_dir}/${brdc_no_suffix}"
         DownloadProduct ${products_dir}/${brdc_no_suffix} $BRDC_HOST/$brdc || return 1
         [ "$ion_opt" = "brdc" ] && product_args="$nav_args "
@@ -268,23 +273,34 @@ PrepareProducts() { # purpose: prepare products in working directory
         return 1
     fi
 
+    # Fallback to rapid products if final ones are not available yet
+    if [ "$rapid" = "no" ]; then
+        DownloadProduct ${products_dir}/$(StripCompressSuffix $sp3) $HOST/$sp3 \
+            || UseRapidProducts $mjd_mid $ac || return 1
+    fi
+
     # Download
     local product_lists="$sp3 $clk $erp $obx"
     [ $AR -eq 0 ] && product_lists+=" $bia"
     for f in $product_lists
     do
-        f_no_suffix=${f%.*}
+        f_no_suffix=$(StripCompressSuffix $f)
         DownloadProduct ${products_dir}/${f_no_suffix} $HOST/$f
     done
-    [ ! -f $products_dir/${sp3%.*} ] && echo -e "${MSGERR} Download $sp3 failed" && return 1
-    [ $AR -eq 0 -a ! -f $products_dir/${bia%.*} ] && echo -e "${MSGERR} Download $bia failed" && return 1
+    local sp3_base=$(StripCompressSuffix $sp3)
+    local clk_base=$(StripCompressSuffix $clk)
+    local erp_base=$(StripCompressSuffix $erp)
+    local obx_base=$(StripCompressSuffix $obx)
+    local bia_base=$(StripCompressSuffix $bia)
+    [ ! -f $products_dir/$sp3_base ] && echo -e "${MSGERR} Download $sp3 failed" && return 1
+    [ $AR -eq 0 -a ! -f $products_dir/$bia_base ] && echo -e "${MSGERR} Download $bia failed" && return 1
 
     local sp3_args clk_args erp_args obx_args bia_args
-    [ -f $products_dir/${sp3%.*} ] && sp3_args="--sp3 $products_dir/${sp3%.*}"
-    [ -f $products_dir/${clk%.*} ] && clk_args="--clk $products_dir/${clk%.*}"
-    [ -f $products_dir/${erp%.*} ] && erp_args="--erp $products_dir/${erp%.*}"
-    [ -f $products_dir/${obx%.*} ] && obx_args="--obx $products_dir/${obx%.*}"
-    [ $AR -eq 0 -a -f $products_dir/${bia%.*} ] && bia_args="--bia $products_dir/${bia%.*}"
+    [ -f $products_dir/$sp3_base ] && sp3_args="--sp3 $products_dir/$sp3_base"
+    [ -f $products_dir/$clk_base ] && clk_args="--clk $products_dir/$clk_base"
+    [ -f $products_dir/$erp_base ] && erp_args="--erp $products_dir/$erp_base"
+    [ -f $products_dir/$obx_base ] && obx_args="--obx $products_dir/$obx_base"
+    [ $AR -eq 0 -a -f $products_dir/$bia_base ] && bia_args="--bia $products_dir/$bia_base"
 
     # echo -e "$MSGSTA PrepareProducts done"
     product_args+="$sp3_args $clk_args $erp_args $obx_args $bia_args $vmf_args $ion_args"
@@ -308,9 +324,10 @@ GetBrdcName() { # purpose: Get the name of broadcast ephemeris
 }
 
 GetProductNames() { # purpose: Get products name of a specific AC
-                    # usage  : GetProductNames mjd ac
+                    # usage  : GetProductNames mjd ac [FIN|RAP]
     local mjd=$1
     local ac=$2
+    local typ=${3:-FIN}
 
     local ydoy=($(mjd2ydoy $mjd))
     local wkdow=($(mjd2wkdow $mjd))
@@ -319,12 +336,15 @@ GetProductNames() { # purpose: Get products name of a specific AC
     local week=${wkdow[0]}
     local dow=${wkdow[1]}
 
-    local sp3="${ac^^}0OPSFIN_${year}${doy}0000_01D_05M_ORB.SP3.gz"
-    local clk="${ac^^}0OPSFIN_${year}${doy}0000_01D_30S_CLK.CLK.gz"
-    local erp="${ac^^}0OPSFIN_${year}${doy}0000_01D_01D_ERP.ERP.gz"
-    local obx="${ac^^}0OPSFIN_${year}${doy}0000_01D_30S_ATT.OBX.gz"
-    local bia="${ac^^}0OPSFIN_${year}${doy}0000_01D_01D_OSB.BIA.gz"
-    local ion="${ac^^}0OPSFIN_${year}${doy}0000_01D_01H_GIM.INX.gz"
+    local gz=".gz"
+    [ "$typ" = "RAP" ] && gz=""  # rapid products are uncompressed (except GIM)
+
+    local sp3="${ac^^}0OPS${typ}_${year}${doy}0000_01D_05M_ORB.SP3${gz}"
+    local clk="${ac^^}0OPS${typ}_${year}${doy}0000_01D_30S_CLK.CLK${gz}"
+    local erp="${ac^^}0OPS${typ}_${year}${doy}0000_01D_01D_ERP.ERP${gz}"
+    local obx="${ac^^}0OPS${typ}_${year}${doy}0000_01D_30S_ATT.OBX${gz}"
+    local bia="${ac^^}0OPS${typ}_${year}${doy}0000_01D_01D_OSB.BIA${gz}"
+    local ion="${ac^^}0OPS${typ}_${year}${doy}0000_01D_01H_GIM.INX.gz"
 
     if [ $mjd -lt 59910 ]; then
         sp3="${ac^^}${week}${dow}.EPH.Z"
@@ -337,6 +357,27 @@ GetProductNames() { # purpose: Get products name of a specific AC
 
     echo "sp3=$sp3; clk=$clk; erp=$erp; obx=$obx; bia=$bia; ion=$ion"
     return 0
+}
+
+UseRapidProducts() { # purpose: switch product set to CODE rapid (caller vars: HOST sp3 clk erp obx bia ion rapid)
+                     # usage  : UseRapidProducts mjd ac
+    local mjd=$1
+    local ac=$2
+
+    [ $mjd -lt 59910 ] && return 1  # only short-name rapid products before GPS week 2238
+
+    echo -e "$MSGWAR final products not available, falling back to CODE rapid products"
+    HOST="ftp://ftp.aiub.unibe.ch/CODE"  # rapid products reside at the top level
+    eval $(GetProductNames $mjd $ac RAP)
+    rapid="yes"
+    return 0
+}
+
+StripCompressSuffix() { # purpose: strip trailing .gz/.Z from a filename
+                        # usage  : StripCompressSuffix file
+    local name="$1"
+    name="${name%.gz}"
+    echo "${name%.Z}"
 }
 
 DownloadVmf1Grids() { # purpose: Download and splice VMF1 grids
