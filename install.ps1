@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 $Repo = 'YuanxinPan/PPPx_bin'
 $ExeName = 'pppx.exe'
-$DllUrl = 'https://github.com/YuanxinPan/PPPx_bin/releases/download/v1.2.1/pppx_winows_dlls.zip'
+$DllUrl = 'https://github.com/YuanxinPan/PPPx_bin/releases/download/v1.2.1/pppx_windows_dlls.zip'
 $InstallDir = Join-Path $env:LOCALAPPDATA 'Programs\PPPx'
 
 Write-Host "==========================================" -ForegroundColor Cyan

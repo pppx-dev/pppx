@@ -111,7 +111,7 @@ irm https://raw.githubusercontent.com/YuanxinPan/PPPx_bin/main/install.ps1 | iex
 
 If you prefer not to use the automated script, you can install `pppx` manually:
 1. Download the `pppx_v1.x.x_windows_x86_64.zip` asset from the latest [Release](https://github.com/YuanxinPan/PPPx_bin/releases)
-2. Download the required Windows DLLs via this [link](https://github.com/YuanxinPan/PPPx_bin/releases/download/v1.2.1/pppx_winows_dlls.zip)
+2. Download the required Windows DLLs via this [link](https://github.com/YuanxinPan/PPPx_bin/releases/download/v1.2.1/pppx_windows_dlls.zip)
 3. Create the PPPx folder: `C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`
 3. Extract both archives and place the `.dll` files and `pppx.exe` in the PPPx folder
 4. Add the absolute path of this folder to your Windows `PATH` environment variable
