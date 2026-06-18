@@ -1,10 +1,10 @@
-![GitHub Release](https://img.shields.io/github/v/release/YuanxinPan/PPPx_bin)
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/YuanxinPan/PPPx_bin/total)
+![GitHub Release](https://img.shields.io/github/v/release/pppx-dev/pppx)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/pppx-dev/pppx/total)
 [![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20macOS%20%7C%20Linux-blue)](#)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.12759169.svg)](https://doi.org/10.5281/zenodo.12759169)
 
 
-# PPPx\_bin
+# PPPx
 
 PPPx is a versatile multi-GNSS data processing software package whose capabilities
 extend beyond Precise Point Positioning (PPP).
@@ -67,7 +67,7 @@ It is compatible with the following distributions (and any of their derivatives)
 Run this single command to automatically download and install the latest release to `~/.local/bin`:
 
 ```shell
-curl -sL https://raw.githubusercontent.com/YuanxinPan/PPPx_bin/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
 ```
 
 
@@ -75,7 +75,7 @@ curl -sL https://raw.githubusercontent.com/YuanxinPan/PPPx_bin/main/install.sh |
 
 If you prefer not to use the automated script, you can install `pppx` manually:
 1. Download the `pppx_v1.x.x_linux_x86_64.zip` asset from the latest
-   [Release](https://github.com/YuanxinPan/PPPx_bin/releases)
+   [Release](https://github.com/pppx-dev/pppx/releases)
 2. Extract the archive to obtain the `pppx` executable
 3. Open your terminal and navigate to your download folder
 4. Make the file executable and move it to your user binary folder:
@@ -102,7 +102,7 @@ However, `pppx` can also run natively on Windows using PowerShell or Command Pro
 Open PowerShell and run the following command. It will automatically download the executable, fetch the required DLLs, and add the installation folder (`C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`) to your system `PATH`:
 
 ```PowerShell
-irm https://raw.githubusercontent.com/YuanxinPan/PPPx_bin/main/install.ps1 | iex
+irm https://raw.githubusercontent.com/pppx-dev/pppx/main/install.ps1 | iex
 ```
 > Note: You must restart PowerShell or cmd.exe after installation.
 
@@ -110,8 +110,8 @@ irm https://raw.githubusercontent.com/YuanxinPan/PPPx_bin/main/install.ps1 | iex
 #### Option 2: Manual Installation
 
 If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx_v1.x.x_windows_x86_64.zip` asset from the latest [Release](https://github.com/YuanxinPan/PPPx_bin/releases)
-2. Download the required Windows DLLs via this [link](https://github.com/YuanxinPan/PPPx_bin/releases/download/v1.2.1/pppx_windows_dlls.zip)
+1. Download the `pppx_v1.x.x_windows_x86_64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
+2. Download the required Windows DLLs via this [link](https://github.com/pppx-dev/pppx/releases/download/v1.2.1/pppx_windows_dlls.zip)
 3. Create the PPPx folder: `C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`
 4. Extract both archives and place the `.dll` files and `pppx.exe` in the PPPx folder
 5. Add the absolute path of this folder to your Windows `PATH` environment variable
@@ -143,14 +143,14 @@ brew install ceres-solver
 Run this command in your Terminal to automatically download the latest release, bypass Apple's quarantine security check, and install it to `~/.local/bin/`:
 
 ```shell
-curl -sL https://raw.githubusercontent.com/YuanxinPan/PPPx_bin/main/install.sh | bash
+curl -sL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
 ```
 
 
 #### Option 2: Manual Installation
 
 If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx_v1.x.x_macos_arm64.zip` asset from the latest [Release](https://github.com/YuanxinPan/PPPx_bin/releases)
+1. Download the `pppx_v1.x.x_macos_arm64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
 2. Extract the archive to obtain the `pppx` executable
 3. Open the Terminal application and navigate to your download folder
 4. Move the `pppx` executable to `~/.local/bin/` using Terminal:
@@ -271,7 +271,7 @@ station, computed with FGO using GPS+Galileo observations:
 ## Contributing
 
 If you have suggestions or encounter problems while using the PPPx software,
-please open an [issue](https://github.com/YuanxinPan/PPPx_bin/issues/new).
+please open an [issue](https://github.com/pppx-dev/pppx/issues/new).
 
 
 ## Author

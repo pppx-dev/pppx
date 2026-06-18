@@ -13,9 +13,9 @@ terms, do not download, install, or use the Software.
 
    1.1 "Software" means the PPPx multi-GNSS data processing software package
        authored by the Author and distributed through the official repository
-       at https://github.com/YuanxinPan/PPPx_bin and its associated release
-       assets, including the compiled executable program(s) (e.g., "pppx"),
-       table files, example data, helper scripts, configuration files, and
+       at https://github.com/pppx-dev/pppx and its associated release assets,
+       including the compiled executable program(s) (e.g., "pppx"), table
+       files, example data, helper scripts, configuration files, and
        documentation.
 
    1.2 "Author" or "Licensor" means Yuanxin Pan, the copyright holder of the
@@ -134,4 +134,4 @@ terms, do not download, install, or use the Software.
    effect. For permissions beyond the scope of this License, including
    commercial licensing or redistribution rights, please contact the Author.
 
-   Contact: Yuanxin Pan (https://github.com/YuanxinPan)
+   Contact: Yuanxin Pan (support@pppx.dev)

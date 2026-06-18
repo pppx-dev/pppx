@@ -11,7 +11,7 @@ CYAN='\033[0;36m'
 BOLD='\033[1m'
 NC='\033[0m' # No Color
 
-REPO="YuanxinPan/PPPx_bin"
+REPO="pppx-dev/pppx"
 EXE_NAME="pppx"
 INSTALL_DIR="${HOME}/.local/bin"
 
