@@ -55,7 +55,7 @@ echo -e "${CYAN}[2/5] Fetching Latest Release...${NC}"
 LATEST_JSON=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
 
 # Search for the zip asset that matches the OS and Architecture
-DOWNLOAD_URL=$(echo "$LATEST_JSON" | grep '"browser_download_url":' | grep -i "pppx.*${OS}_${ARCH}\.zip" | head -n 1 | cut -d '"' -f 4)
+DOWNLOAD_URL=$(echo "$LATEST_JSON" | grep '"browser_download_url":' | grep -i "pppx.*${OS}-${ARCH}\.zip" | head -n 1 | cut -d '"' -f 4)
 
 if [ -z "$DOWNLOAD_URL" ]; then
     echo -e "${RED}Error: Could not find a matching release asset for $OS $ARCH.${NC}"

@@ -20,7 +20,7 @@ try {
     exit 1
 }
 
-$Asset = $Release.assets | Where-Object { $_.name -match 'windows_x86_64\.zip$' }
+$Asset = $Release.assets | Where-Object { $_.name -match 'windows-x86_64\.zip$' }
 if (-not $Asset) {
     Write-Host "Error: Could not find the Windows zip asset." -ForegroundColor Red
     exit 1

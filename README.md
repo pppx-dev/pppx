@@ -74,7 +74,7 @@ curl -sL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
 #### Option 2: Manual Installation
 
 If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx_v1.x.x_linux_x86_64.zip` asset from the latest
+1. Download the `pppx-1.x.x-linux-x86_64.zip` asset from the latest
    [Release](https://github.com/pppx-dev/pppx/releases)
 2. Extract the archive to obtain the `pppx` executable
 3. Open your terminal and navigate to your download folder
@@ -110,7 +110,7 @@ irm https://raw.githubusercontent.com/pppx-dev/pppx/main/install.ps1 | iex
 #### Option 2: Manual Installation
 
 If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx_v1.x.x_windows_x86_64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
+1. Download the `pppx-1.x.x-windows-x86_64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
 2. Download the required Windows DLLs via this [link](https://github.com/pppx-dev/pppx/releases/download/v1.2.1/pppx_windows_dlls.zip)
 3. Create the PPPx folder: `C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`
 4. Extract both archives and place the `.dll` files and `pppx.exe` in the PPPx folder
@@ -150,7 +150,7 @@ curl -sL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
 #### Option 2: Manual Installation
 
 If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx_v1.x.x_macos_arm64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
+1. Download the `pppx-1.x.x-macos-arm64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
 2. Extract the archive to obtain the `pppx` executable
 3. Open the Terminal application and navigate to your download folder
 4. Move the `pppx` executable to `~/.local/bin/` using Terminal:
