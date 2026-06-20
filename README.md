@@ -65,7 +65,7 @@ It is compatible with the following distributions (and any of their derivatives)
 Clone the repository and run the installer from its root folder:
 
 ```shell
-git clone https://github.com/pppx-dev/pppx.git
+git clone --depth 1 https://github.com/pppx-dev/pppx.git
 cd pppx
 ./install.sh
 ```
@@ -88,7 +88,7 @@ download the executable, fetch the required DLLs, and add the installation folde
 (`C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`) to your user `PATH`:
 
 ```PowerShell
-git clone https://github.com/pppx-dev/pppx.git
+git clone --depth 1 https://github.com/pppx-dev/pppx.git
 cd pppx
 .\install.ps1
 ```
@@ -130,7 +130,7 @@ brew install ceres-solver
 Clone the repository and run the installer from its root folder in the Terminal:
 
 ```shell
-git clone https://github.com/pppx-dev/pppx.git
+git clone --depth 1 https://github.com/pppx-dev/pppx.git
 cd pppx
 ./install.sh
 ```
