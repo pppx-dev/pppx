@@ -4,10 +4,25 @@ $ExeName = 'pppx.exe'
 $DllUrl = 'https://github.com/pppx-dev/pppx/releases/download/v1.2.1/pppx_windows_dlls.zip'
 $InstallDir = Join-Path $env:LOCALAPPDATA 'Programs\PPPx'
 
+# Locate the repository root (the directory containing this script)
+$PppxRoot = $PSScriptRoot
+$PppxShSrc = Join-Path $PppxRoot 'scripts\pppx.sh'
+$TableDir = Join-Path $PppxRoot 'table'
+
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host "   PPPx Windows Automated Installer" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
+
+# Ensure the script is run from inside the cloned repository
+if (-not (Test-Path $PppxShSrc) -or -not (Test-Path $TableDir)) {
+    Write-Host "Error: install.ps1 must be run from the root of the cloned PPPx repository." -ForegroundColor Red
+    Write-Host "Please clone the repository first and run the installer from its root folder:"
+    Write-Host "  git clone https://github.com/$Repo.git"
+    Write-Host "  cd pppx"
+    Write-Host "  .\install.ps1"
+    exit 1
+}
 
 Write-Host "1. Fetching latest release info from GitHub..."
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -63,7 +78,16 @@ if ($ExtractedDlls) {
     Write-Host "   Warning: No DLLs found in the downloaded zip." -ForegroundColor Yellow
 }
 
-Write-Host "4. Updating User PATH Environment Variable..."
+Write-Host "4. Installing pppx.sh wrapper (for Git Bash / MSYS2)..."
+# Point the wrapper's table directory at the repo's table folder. Use forward
+# slashes so the path works both for the native pppx.exe and inside Git Bash.
+$RepoRoot = $PppxRoot -replace '\\', '/'
+$PppxShContent = (Get-Content -Raw $PppxShSrc).Replace('PACKAGE_ROOT', $RepoRoot)
+# WriteAllText emits UTF-8 without BOM, keeping the shebang valid for Git Bash.
+[System.IO.File]::WriteAllText((Join-Path $InstallDir 'pppx.sh'), $PppxShContent)
+Write-Host "   Configured table directory: $RepoRoot/table"
+
+Write-Host "5. Updating User PATH Environment Variable..."
 $UserPath = [Environment]::GetEnvironmentVariable('PATH', 'User')
 if ($UserPath -notmatch [regex]::Escape($InstallDir)) {
     $NewPath = $UserPath + ';' + $InstallDir
@@ -73,7 +97,7 @@ if ($UserPath -notmatch [regex]::Escape($InstallDir)) {
     Write-Host "   Directory is already in PATH."
 }
 
-Write-Host "5. Cleaning up local downloaded files..."
+Write-Host "6. Cleaning up local downloaded files..."
 Remove-Item -Path $TempZip -Force
 Remove-Item -Path $ExtractedExe.FullName -Force
 Remove-Item -Path $TempDllZip -Force
@@ -81,6 +105,7 @@ if (Test-Path $TempDllExtract) { Remove-Item -Path $TempDllExtract -Recurse -For
 
 Write-Host ""
 Write-Host "Installation complete!" -ForegroundColor Green
+Write-Host "Installed 'pppx.exe' and 'pppx.sh' (run from Git Bash)." -ForegroundColor Green
 Write-Host "NOTE: If you have cmd.exe or PowerShell open, you must close and restart them to use pppx." -ForegroundColor Yellow
 Write-Host ""
 

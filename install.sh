@@ -15,11 +15,26 @@ REPO="pppx-dev/pppx"
 EXE_NAME="pppx"
 INSTALL_DIR="${HOME}/.local/bin"
 
+# Locate the repository root (the directory containing this script)
+PPPX_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PPPX_SH_SRC="$PPPX_ROOT/scripts/pppx.sh"
+TABLE_DIR="$PPPX_ROOT/table"
+
 echo -e "${CYAN}${BOLD}==========================================${NC}"
 echo -e "${CYAN}${BOLD}       PPPx Automated Installer           ${NC}"
 echo -e "${CYAN}${BOLD}==========================================${NC}\n"
 
-echo -e "${CYAN}[1/5] Detecting System Environment...${NC}"
+# Ensure the script is run from inside the cloned repository
+if [ ! -f "$PPPX_SH_SRC" ] || [ ! -d "$TABLE_DIR" ]; then
+    echo -e "${RED}Error: install.sh must be run from the root of the cloned PPPx repository.${NC}"
+    echo -e "Please clone the repository first and run the installer from its root folder:"
+    echo -e "${BOLD}  git clone https://github.com/$REPO.git${NC}"
+    echo -e "${BOLD}  cd pppx${NC}"
+    echo -e "${BOLD}  ./install.sh${NC}"
+    exit 1
+fi
+
+echo -e "${CYAN}[1/6] Detecting System Environment...${NC}"
 # 1. Detect Operating System
 OS="$(uname -s | tr '[:upper:]' '[:lower:]')"
 if [ "$OS" = "darwin" ]; then
@@ -51,7 +66,7 @@ if ! command -v unzip &> /dev/null; then
 fi
 
 # 3. Fetch the latest release download URL from GitHub API
-echo -e "${CYAN}[2/5] Fetching Latest Release...${NC}"
+echo -e "${CYAN}[2/6] Fetching Latest Release...${NC}"
 LATEST_JSON=$(curl -s "https://api.github.com/repos/$REPO/releases/latest")
 
 # Search for the zip asset that matches the OS and Architecture
@@ -69,7 +84,7 @@ echo -e "      Found: ${DOWNLOAD_URL##*/}\n"
 TMP_DIR=$(mktemp -d)
 ZIP_FILE="$TMP_DIR/release.zip"
 
-echo -e "${CYAN}[3/5] Downloading & Extracting...${NC}"
+echo -e "${CYAN}[3/6] Downloading & Extracting...${NC}"
 curl -sL "$DOWNLOAD_URL" -o "$ZIP_FILE"
 unzip -q "$ZIP_FILE" -d "$TMP_DIR"
 
@@ -84,7 +99,7 @@ fi
 echo -e "      Extraction successful.\n"
 
 # 5. Move to the installation directory
-echo -e "${CYAN}[4/5] Installing to $INSTALL_DIR...${NC}"
+echo -e "${CYAN}[4/6] Installing to $INSTALL_DIR...${NC}"
 mkdir -p "$INSTALL_DIR"
 mv "$EXTRACTED_EXE" "$INSTALL_DIR/$EXE_NAME"
 chmod +x "$INSTALL_DIR/$EXE_NAME"
@@ -96,8 +111,15 @@ if [ "$OS" = "macos" ]; then
 fi
 echo -e "      Installed successfully.\n"
 
-# 6. Check and Update PATH Variable
-echo -e "${CYAN}[5/5] Checking Environment PATH...${NC}"
+# 6. Install the pppx.sh wrapper script, pointing it at the repo's table folder
+echo -e "${CYAN}[5/6] Installing pppx.sh wrapper...${NC}"
+sed "s|PACKAGE_ROOT|$PPPX_ROOT|" "$PPPX_SH_SRC" > "$INSTALL_DIR/pppx.sh"
+chmod +x "$INSTALL_DIR/pppx.sh"
+echo -e "      Configured table directory: ${BOLD}$TABLE_DIR${NC}"
+echo -e "      Installed successfully.\n"
+
+# 7. Check and Update PATH Variable
+echo -e "${CYAN}[6/6] Checking Environment PATH...${NC}"
 NEED_RESTART=false
 
 if [[ ":$PATH:" != *":$INSTALL_DIR:"* ]]; then
@@ -120,10 +142,12 @@ else
     echo -e "      Directory is already in your PATH."
 fi
 
-# 7. Clean up
+# 8. Clean up
 rm -rf "$TMP_DIR"
 
 echo -e "\n${GREEN}${BOLD}Installation complete!${NC}"
+echo -e "Installed '${BOLD}pppx${NC}' and the wrapper '${BOLD}pppx.sh${NC}' to ${BOLD}$INSTALL_DIR${NC}."
+echo -e "'${BOLD}pppx.sh${NC}' is configured to use the table files in ${BOLD}$TABLE_DIR${NC}."
 
 if [ "$NEED_RESTART" = true ]; then
     echo -e "${YELLOW}NOTE: The installation directory was just added to your PATH.${NC}"

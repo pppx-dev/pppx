@@ -110,8 +110,8 @@ CheckExecutables() { # purpose: check whether all needed executables are callabl
 
     which pppx > /dev/null 2>&1
     [ $? -ne 0 ] && echo -e "$MSGERR pppx not found" && return 1
-    which wget > /dev/null 2>&1
-    [ $? -ne 0 ] && echo -e "$MSGERR wget not found" && return 1
+    which curl > /dev/null 2>&1
+    [ $? -ne 0 ] && echo -e "$MSGERR curl not found" && return 1
     which awk > /dev/null 2>&1
     [ $? -ne 0 ] && echo -e "$MSGERR awk not found" && return 1
 
@@ -326,7 +326,7 @@ GetBrdcName() { # purpose: Get the name of broadcast ephemeris
 GetProductNames() { # purpose: Get products name of a specific AC
                     # usage  : GetProductNames mjd ac [FIN|RAP]
     local mjd=$1
-    local ac=$2
+    local ac=$(echo "$2" | tr '[:lower:]' '[:upper:]')
     local typ=${3:-FIN}
 
     local ydoy=($(mjd2ydoy $mjd))
@@ -339,20 +339,20 @@ GetProductNames() { # purpose: Get products name of a specific AC
     local gz=".gz"
     [ "$typ" = "RAP" ] && gz=""  # rapid products are uncompressed (except GIM)
 
-    local sp3="${ac^^}0OPS${typ}_${year}${doy}0000_01D_05M_ORB.SP3${gz}"
-    local clk="${ac^^}0OPS${typ}_${year}${doy}0000_01D_30S_CLK.CLK${gz}"
-    local erp="${ac^^}0OPS${typ}_${year}${doy}0000_01D_01D_ERP.ERP${gz}"
-    local obx="${ac^^}0OPS${typ}_${year}${doy}0000_01D_30S_ATT.OBX${gz}"
-    local bia="${ac^^}0OPS${typ}_${year}${doy}0000_01D_01D_OSB.BIA${gz}"
-    local ion="${ac^^}0OPS${typ}_${year}${doy}0000_01D_01H_GIM.INX.gz"
+    local sp3="${ac}0OPS${typ}_${year}${doy}0000_01D_05M_ORB.SP3${gz}"
+    local clk="${ac}0OPS${typ}_${year}${doy}0000_01D_30S_CLK.CLK${gz}"
+    local erp="${ac}0OPS${typ}_${year}${doy}0000_01D_01D_ERP.ERP${gz}"
+    local obx="${ac}0OPS${typ}_${year}${doy}0000_01D_30S_ATT.OBX${gz}"
+    local bia="${ac}0OPS${typ}_${year}${doy}0000_01D_01D_OSB.BIA${gz}"
+    local ion="${ac}0OPS${typ}_${year}${doy}0000_01D_01H_GIM.INX.gz"
 
     if [ $mjd -lt 59910 ]; then
-        sp3="${ac^^}${week}${dow}.EPH.Z"
-        clk="${ac^^}${week}${dow}.CLK.Z"
-        erp="${ac^^}${week}${dow}.ERP.Z"
-        obx="${ac^^}${week}${dow}.OBX.Z"
-        bia="${ac^^}${week}${dow}.BIA.Z"
-        ion="${ac^^}G${doy}0.${year:2:2}I.Z"
+        sp3="${ac}${week}${dow}.EPH.Z"
+        clk="${ac}${week}${dow}.CLK.Z"
+        erp="${ac}${week}${dow}.ERP.Z"
+        obx="${ac}${week}${dow}.OBX.Z"
+        bia="${ac}${week}${dow}.BIA.Z"
+        ion="${ac}G${doy}0.${year:2:2}I.Z"
     fi
 
     echo "sp3=$sp3; clk=$clk; erp=$erp; obx=$obx; bia=$bia; ion=$ion"
@@ -436,7 +436,7 @@ DownloadProduct() { # purpose: download and uncompress a product
     if [ -f "$file" ]; then
         return 0
     else
-        WgetDownload "$url" || return 1
+        CurlDownload "$url" || return 1
         if [ $suffix = '.Z' -o $suffix = '.gz' ]; then
             gunzip -f $(basename "$url") || return 1
         else
@@ -447,13 +447,18 @@ DownloadProduct() { # purpose: download and uncompress a product
     fi
 }
 
-WgetDownload() { # purpose: download a file with wget
-                 # usage  : WgetDownload url
+CurlDownload() { # purpose: download a file with curl
+                 # usage  : CurlDownload url
     local url="$1"
-    local args="-nv -nc -c -t 3 --connect-timeout=10 --read-timeout=60"
+    local out="$(basename "$url")"
+    local args="-fsSL --connect-timeout 10 --retry 3"
 
-    wget ${args} ${url}
-    [ -e $(basename "${url}") ] && return 0 || return 1
+    if curl $args -o "$out" "$url"; then
+        return 0
+    else
+        rm -f "$out"  # drop any partial file so callers can fall back
+        return 1
+    fi
 }
 
 LastYearMonth() { # purpose: get last year-month

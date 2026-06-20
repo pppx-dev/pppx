@@ -1,3 +1,4 @@
+*.sh text eol=lf
 bin/** linguist-vendored
 example/** linguist-vendored
 scripts/** linguist-vendored

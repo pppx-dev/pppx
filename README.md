@@ -62,60 +62,48 @@ It is compatible with the following distributions (and any of their derivatives)
 > You can easily check your system's `glibc` version by running `ldd --version` in your terminal.
 
 
-#### Option 1: Automated Installation (Recommended)
-
-Run this single command to automatically download and install the latest release to `~/.local/bin`:
+Clone the repository and run the installer from its root folder:
 
 ```shell
-curl -sL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
+git clone https://github.com/pppx-dev/pppx.git
+cd pppx
+./install.sh
 ```
 
-
-#### Option 2: Manual Installation
-
-If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx-1.x.x-linux-x86_64.zip` asset from the latest
-   [Release](https://github.com/pppx-dev/pppx/releases)
-2. Extract the archive to obtain the `pppx` executable
-3. Open your terminal and navigate to your download folder
-4. Make the file executable and move it to your user binary folder:
-
-```shell
-chmod +x pppx
-mkdir -p ~/.local/bin
-mv pppx ~/.local/bin/pppx
-
-# Restart your terminal and run `pppx` to check that it works
-# If it is not found, add `~/.local/bin` to PATH with the command below:
-echo "export PATH=\${HOME}/.local/bin:\$PATH" >> ~/.bashrc
-```
+The installer downloads the latest `pppx` executable, installs both `pppx` and the
+wrapper script `pppx.sh` to `~/.local/bin`, and configures `pppx.sh` to use the
+`table` files in the cloned repository. Keeping the repository is recommended, as it
+provides the `table` files and examples used by `pppx`.
 
 
 ### Windows
 
 The easiest way to run `pppx` on Windows is via the Windows Subsystem for Linux (WSL).
-However, `pppx` can also run natively on Windows using PowerShell or Command Prompt (cmd.exe).
+However, `pppx` can also run natively on Windows using PowerShell, Command Prompt (cmd.exe)
+or Git Bash.
 
 
-#### Option 1: Automated Installation (Recommended)
-
-Open PowerShell and run the following command. It will automatically download the executable, fetch the required DLLs, and add the installation folder (`C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`) to your system `PATH`:
+Clone the repository, then run the installer from its root folder in PowerShell. It will
+download the executable, fetch the required DLLs, and add the installation folder
+(`C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`) to your user `PATH`:
 
 ```PowerShell
-irm https://raw.githubusercontent.com/pppx-dev/pppx/main/install.ps1 | iex
+git clone https://github.com/pppx-dev/pppx.git
+cd pppx
+.\install.ps1
 ```
-> Note: You must restart PowerShell or cmd.exe after installation.
+The installer also installs and configures the wrapper script `pppx.sh` (pointing it at
+the `table` folder in the cloned repository). While `pppx.sh` cannot run in PowerShell or
+cmd.exe, you can run it from **Git Bash**, which is bundled with [Git for Windows](https://git-scm.com/download/win)
+(the same tool used for `git clone`). Product downloads rely on `curl`, which Git Bash
+provides:
 
+```shell
+# In Git Bash
+pppx.sh -c pppx.ini rinex/ZIM200CHE_R_20221000000_01D_30S_MO.rnx
+```
 
-#### Option 2: Manual Installation
-
-If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx-1.x.x-windows-x86_64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
-2. Download the required Windows DLLs via this [link](https://github.com/pppx-dev/pppx/releases/download/v1.2.1/pppx_windows_dlls.zip)
-3. Create the PPPx folder: `C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`
-4. Extract both archives and place the `.dll` files and `pppx.exe` in the PPPx folder
-5. Add the absolute path of this folder to your Windows `PATH` environment variable
-6. Open PowerShell or Command Prompt and type `pppx.exe` to verify the installation
+> Note: You must restart PowerShell, cmd.exe, or Git Bash after installation.
 
 
 ### macOS
@@ -139,31 +127,18 @@ brew install ceres-solver
 ```
 
 
-#### Option 1: Automated Installation (Recommended)
-Run this command in your Terminal to automatically download the latest release, bypass Apple's quarantine security check, and install it to `~/.local/bin/`:
+Clone the repository and run the installer from its root folder in the Terminal:
 
 ```shell
-curl -sL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
+git clone https://github.com/pppx-dev/pppx.git
+cd pppx
+./install.sh
 ```
 
-
-#### Option 2: Manual Installation
-
-If you prefer not to use the automated script, you can install `pppx` manually:
-1. Download the `pppx-1.x.x-macos-arm64.zip` asset from the latest [Release](https://github.com/pppx-dev/pppx/releases)
-2. Extract the archive to obtain the `pppx` executable
-3. Open the Terminal application and navigate to your download folder
-4. Move the `pppx` executable to `~/.local/bin/` using Terminal:
-```shell
-chmod +x pppx
-mkdir -p ~/.local/bin
-mv pppx ~/.local/bin/
-
-echo "export PATH=\${HOME}/.local/bin:\$PATH" >> ~/.zshrc
-```
-5. Due to Apple's Gatekeeper security settings, you must authorize the software before it can run. You can do this by running `xattr -d com.apple.quarantine ~/.local/bin/pppx` or by following this
-[Apple Support Guide](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac)
-6. Restart your Terminal and run `pppx` to verify the installation
+The installer downloads the latest `pppx` executable, bypasses Apple's quarantine
+security check, installs both `pppx` and the wrapper script `pppx.sh` to `~/.local/bin`,
+and configures `pppx.sh` to use the `table` files in the cloned repository. Keeping the
+repository is recommended, as it provides the `table` files and examples used by `pppx`.
 
 
 ## Usage
@@ -204,9 +179,11 @@ pppx -x ppp > pppx.ini   # options: spp/ppp/rtk/tdp
 pppx.sh -c pppx.ini rinex/ZIM200CHE_R_20221000000_01D_30S_MO.rnx
 ```
 
-> **NOTE**: Before first use, edit `scripts/pppx.sh` and set the variable
-"TABLE\_DIR" (line #42) to the actual path of the "table" folder in the
-PPPx software package.
+> **NOTE**: `pppx.sh` is installed and configured automatically by the installer
+(`install.sh` on Linux/macOS, `install.ps1` on Windows), pointing it at the `table`
+folder in your cloned repository, so `pppx.sh -c ...` works out of the box. It runs
+natively on Linux and macOS, and on Windows via Git Bash. It requires only `curl` and
+standard Unix tools, which are available by default on these platforms.
 
 
 ### Input
