@@ -9,3 +9,7 @@ user_output/
 *.pos
 *.stat
 *.png
+
+# Built user manual (distributed as a release asset)
+PPPx_manual.pdf
+pppx-manual.pdf

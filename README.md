@@ -28,6 +28,7 @@ Other programs in the PPPx software package include:
 
 
 ## Table of Contents
+- [Documentation](#documentation)
 - [Installation](#installation)
     - [Linux](#linux)
     - [Windows](#windows)
@@ -35,6 +36,12 @@ Other programs in the PPPx software package include:
 - [Usage](#usage)
 - [Example](#example)
 - [Contributing](#contributing)
+
+
+## Documentation
+
+The user manual is available as a PDF, attached to every release:
+[**PPPx User Manual**](https://github.com/pppx-dev/pppx/releases/latest/download/pppx-manual.pdf).
 
 
 ## Installation

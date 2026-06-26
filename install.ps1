@@ -106,6 +106,7 @@ if (Test-Path $TempDllExtract) { Remove-Item -Path $TempDllExtract -Recurse -For
 Write-Host ""
 Write-Host "Installation complete!" -ForegroundColor Green
 Write-Host "Installed 'pppx.exe' and 'pppx.sh' (run from Git Bash)." -ForegroundColor Green
+Write-Host "Documentation: https://github.com/$Repo/releases/latest/download/pppx-manual.pdf"
 Write-Host "NOTE: If you have cmd.exe or PowerShell open, you must close and restart them to use pppx." -ForegroundColor Yellow
 Write-Host ""
 

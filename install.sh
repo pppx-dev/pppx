@@ -148,6 +148,7 @@ rm -rf "$TMP_DIR"
 echo -e "\n${GREEN}${BOLD}Installation complete!${NC}"
 echo -e "Installed '${BOLD}pppx${NC}' and the wrapper '${BOLD}pppx.sh${NC}' to ${BOLD}$INSTALL_DIR${NC}."
 echo -e "'${BOLD}pppx.sh${NC}' is configured to use the table files in ${BOLD}$TABLE_DIR${NC}."
+echo -e "Documentation: ${BOLD}https://github.com/$REPO/releases/latest/download/pppx-manual.pdf${NC}"
 
 if [ "$NEED_RESTART" = true ]; then
     echo -e "${YELLOW}NOTE: The installation directory was just added to your PATH.${NC}"
