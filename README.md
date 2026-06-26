@@ -19,7 +19,7 @@ The main program, `pppx`, focuses on positioning and supports the following feat
 - Solvers: LSQ, EKF, and FGO
 - PPP-AR with OSB products (.BIA)
 - Flexible frequency selection: L1/L2/L5/E1/E5a/...
-- High precision and efficiency: Processes 2880 epochs in 2 seconds
+- High precision and efficiency: Processes 2880 epochs within 1 second
 - Unified input/output format
 - Cross-platform: Runs on Linux, Windows, and macOS
 
@@ -202,6 +202,13 @@ standard Unix tools, which are available by default on these platforms.
 
 
 ### Visualization
+
+#### With the PPPx Web Viewer
+
+The [PPPx Web Viewer](https://app.pppx.dev/) is a browser-based app for interactive
+viewing of PPPx results. Simply open the page and load a `.pos` or `.stat` file to
+explore the position time series and a map view of the solution. No installation is
+required, and it runs on any platform.
 
 #### With Python
 
