@@ -39,6 +39,7 @@ MSGWAR="${YELLOW}warning:$NC"
 MSGINF="${BLUE}::$NC"
 MSGSTA="${BLUE}===>$NC"
 
+readonly PPPX_ROOT="$HOME/.pppx"
 readonly TABLE_DIR="PACKAGE_ROOT/table"
 readonly PRODUCT_DIR="./products"
 
@@ -50,8 +51,10 @@ main()
     CheckCmdArgs "$@" || return 1  # set: config rnxobs rnxbas
     CheckExecutables || return 1
 
-    # Download products
     local mjd=$(GetRinexMjd "$rnxobs")
+    [ $mjd == 0 ] && echo -e "$MSGERR empty rinex: $rnxobs" && return 1
+
+    # Download products
     product_args=""
     PrepareProducts $mjd "$PRODUCT_DIR" "$config" || return 1  # set: product_args
 
@@ -145,6 +148,7 @@ GetRinexMjd() { # purpose: get MJD of the first epoch
     local rnxobs="$1"
     local ymd_start
     local time_str=$(grep -E "^(> [ 0-9]{4} [ 0-1][0-9] | [ 0-9][0-9] [ 0-1][0-9] )" "$rnxobs" | head -1)
+    [ -z "$time_str" ] && echo 0 && return 1
     if [[ "$time_str" =~ ^\>  ]]; then
         ymd_start=$(echo $time_str | awk '{print $2,$3,$4}')
     else
@@ -180,6 +184,7 @@ GetTableArgs() {
     local ctrl_file="$3"
 
     local sol_mode=$(GetConfigOption "sol_mode" "$ctrl_file")
+    local trop_model=$(GetConfigOption "trop" "$ctrl_file")
 
     local atx_args=""
     local atx=$(GetConfigOption "igsatx" "$ctrl_file")
@@ -189,22 +194,19 @@ GetTableArgs() {
     local chn=$(GetConfigOption "channel" "$ctrl_file")
     [ -z "$chn" -a "$sol_mode" != "spp" ] && chn="$TABLE_DIR/glonass_chn" && chn_args="--chn $chn"
 
-    local ocl_args=""
-    local ocl=$(GetConfigOption "oceanload" "$ctrl_file")
-    [ -z "$ocl" -a "$sol_mode" = "ppp" ] && ocl="$TABLE_DIR/oceanload" && ocl_args="--ocl $ocl"
-
-
-    local trop_model=$(GetConfigOption "trop" "$ctrl_file")
+    local blq_args=""
+    local blq=$(GetConfigOption "oceanload" "$ctrl_file")
+    [ -z "$blq" -a "$sol_mode" = "ppp" ] && blq="$TABLE_DIR/oceanload" && blq_args="--blq $blq"
 
     local gpt2w_args=""
     local gpt2w=$(GetConfigOption "gpt2w" "$ctrl_file")
-    [ -z "$gpt2w" -a "$trop_model" = "GPT2w" ] && gpt2w="$TABLE_DIR/gpt2_1wA.grd" && gpt2w_args="--gpt2w $gpt2w"
+    [ -z "$gpt2w" -a "$trop_model" = "GPT2w" ] && gpt2w="$TABLE_DIR/gpt2_1wA.grd" && gpt2w_args="--gpt $gpt2w"
 
     local oro_args=""
     local oro=$(GetConfigOption "orography" "$ctrl_file")
-    [ -z "$oro" -a "$trop_model" = "VMF1" ] && oro="$TABLE_DIR/orography_ell" && oro_args="--oro $oro"
+    [ -z "$oro" -a "$trop_model" = "VMF1" ] && oro="$TABLE_DIR/orography_ell" && oro_args="--ell $oro"
 
-    local table_args="$atx_args $chn_args $ocl_args $gpt2w_args $oro_args"
+    local table_args="$atx_args $chn_args $blq_args $gpt2w_args $oro_args"
     echo "$table_args"
     return 0
 }
@@ -250,22 +252,22 @@ PrepareProducts() { # purpose: prepare products in working directory
     local ion_args=""
     local ion_opt=$(GetConfigOption "iono" "$ctrl_file")
     if [ "$ion_opt" = "IONEX" ]; then
-        local ion_no_suffix=$(StripCompressSuffix $ion)
-        if ! DownloadProduct ${products_dir}/${ion_no_suffix} $HOST/$ion; then
+        local ion_base=$(StripCompressSuffix $ion)
+        if ! DownloadProduct ${products_dir}/${ion_base} $HOST/$ion; then
             UseRapidProducts $mjd_mid $ac || return 1
-            ion_no_suffix=$(StripCompressSuffix $ion)
-            DownloadProduct ${products_dir}/${ion_no_suffix} $HOST/$ion || return 1
+            ion_base=$(StripCompressSuffix $ion)
+            DownloadProduct ${products_dir}/${ion_base} $HOST/$ion || return 1
         fi
-        ion_args="--ion ${products_dir}/${ion_no_suffix}"
+        ion_args="--ion ${products_dir}/${ion_base}"
     fi
 
     # BRDC
     local BRDC_HOST="ftp://gssc.esa.int/gnss/data/daily/${year}/brdc"
     local brdc=$(GetBrdcName $mjd_mid)
     if [ "$product_src" = "brdc" -o "$ion_opt" = "brdc" ]; then
-        local brdc_no_suffix=$(StripCompressSuffix $brdc)
-        local nav_args="--nav ${products_dir}/${brdc_no_suffix}"
-        DownloadProduct ${products_dir}/${brdc_no_suffix} $BRDC_HOST/$brdc || return 1
+        local brdc_base=$(StripCompressSuffix $brdc)
+        local nav_args="--nav ${products_dir}/${brdc_base}"
+        DownloadProduct ${products_dir}/${brdc_base} $BRDC_HOST/$brdc || return 1
         [ "$ion_opt" = "brdc" ] && product_args="$nav_args "
         [ "$product_src" = "brdc" ] && product_args="$nav_args $vmf_args $ion_args" && return 0
     elif [ "$product_src" != "precise" ]; then
@@ -284,8 +286,8 @@ PrepareProducts() { # purpose: prepare products in working directory
     [ $AR -eq 0 ] && product_lists+=" $bia"
     for f in $product_lists
     do
-        f_no_suffix=$(StripCompressSuffix $f)
-        DownloadProduct ${products_dir}/${f_no_suffix} $HOST/$f
+        f_base=$(StripCompressSuffix $f)
+        DownloadProduct ${products_dir}/${f_base} $HOST/$f
     done
     local sp3_base=$(StripCompressSuffix $sp3)
     local clk_base=$(StripCompressSuffix $clk)
