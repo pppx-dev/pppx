@@ -40,7 +40,9 @@ MSGINF="${BLUE}::$NC"
 MSGSTA="${BLUE}===>$NC"
 
 readonly PPPX_ROOT="$HOME/.pppx"
-readonly TABLE_DIR="PACKAGE_ROOT/table"
+TABLE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/table"
+command -v cygpath > /dev/null 2>&1 && TABLE_DIR="$(cygpath -m "$TABLE_DIR")"
+readonly TABLE_DIR
 readonly PRODUCT_DIR="./products"
 readonly CODE_HOST="https://www.aiub.unibe.ch/download/CODE"
 
@@ -51,6 +53,10 @@ main()
 {
     CheckCmdArgs "$@" || return 1  # set: config rnxobs rnxbas
     CheckExecutables || return 1
+    if [ ! -d "$TABLE_DIR" ]; then
+        echo -e "$MSGERR no such table directory: $TABLE_DIR (please re-run the installer)"
+        return 1
+    fi
 
     local mjd=$(GetRinexMjd "$rnxobs")
     [ $mjd == 0 ] && echo -e "$MSGERR empty rinex: $rnxobs" && return 1
@@ -60,11 +66,11 @@ main()
     PrepareProducts $mjd "$PRODUCT_DIR" "$config" || return 1  # set: product_args
 
     # Default paths for missing tables
-    local table_args=$(GetTableArgs $mjd "$TABLE_DIR" "$config")
+    GetTableArgs $mjd "$TABLE_DIR" "$config"  # set: table_args
 
     # Process
-    echo pppx "$@" $product_args $table_args
-    pppx "$@" $product_args $table_args
+    echo pppx "$@" $product_args "${table_args[@]}"
+    pppx "$@" $product_args "${table_args[@]}"
 }
 
 CheckCmdArgs() { # purpose: chech whether command line arguments are right
@@ -95,13 +101,13 @@ CheckCmdArgs() { # purpose: chech whether command line arguments are right
     if [ ! -f "$config" ]; then
         echo -e "$MSGERR no such config: $config"
         return 1
-    elif [ ! -f ${rnxobs} ]; then
+    elif [ ! -f "$rnxobs" ]; then
         echo -e "$MSGERR no such rnxobs: $rnxobs"
         return 1
     fi
 
     local sol_mode=$(GetConfigOption "sol_mode" "$config")
-    [ -z $sol_mode ] && sol_mode="ppp"  # default mode
+    [ -z "$sol_mode" ] && sol_mode="ppp"  # default mode
     if [ "$sol_mode" = "rtk" ]; then
        [ ! -f "$rnxbas" ] && echo -e "$MSGERR no such rnxbas: $rnxbas" && return 1
     fi
@@ -140,7 +146,8 @@ PPPx_Help() { # purpose: print usage for PPPx
 GetConfigOption() {
     local opt="$1"
     local ctrl_file="$2"
-    local value=$(sed -n "/^${opt}/ {s/${opt}\s*=\s*//; s/\s*\;.*$//; p}" "$ctrl_file")
+    # The last expression also strips the \r of a config file with Windows (CRLF) line endings
+    local value=$(sed -n "/^${opt}/ {s/${opt}[[:space:]]*=[[:space:]]*//; s/[[:space:]]*;.*$//; s/[[:space:]]*$//; p;}" "$ctrl_file")
     echo "$value"
 }
 
@@ -187,28 +194,23 @@ GetTableArgs() {
     local sol_mode=$(GetConfigOption "sol_mode" "$ctrl_file")
     local trop_model=$(GetConfigOption "trop" "$ctrl_file")
 
-    local atx_args=""
+    # Sets the array table_args so paths with spaces stay one argument
+    table_args=()
+
     local atx=$(GetConfigOption "igsatx" "$ctrl_file")
-    [ -z "$atx" ] && atx=$(SelectAtx "$TABLE_DIR" $mjd) && atx_args="--atx $atx"
+    [ -z "$atx" ] && table_args+=(--atx "$(SelectAtx "$table_dir" $mjd)")
 
-    local chn_args=""
     local chn=$(GetConfigOption "channel" "$ctrl_file")
-    [ -z "$chn" -a "$sol_mode" != "spp" ] && chn="$TABLE_DIR/glonass_chn" && chn_args="--chn $chn"
+    [ -z "$chn" -a "$sol_mode" != "spp" ] && table_args+=(--chn "$table_dir/glonass_chn")
 
-    local blq_args=""
     local blq=$(GetConfigOption "oceanload" "$ctrl_file")
-    [ -z "$blq" -a "$sol_mode" = "ppp" ] && blq="$TABLE_DIR/oceanload" && blq_args="--blq $blq"
+    [ -z "$blq" -a "$sol_mode" = "ppp" ] && table_args+=(--blq "$table_dir/oceanload")
 
-    local gpt2w_args=""
     local gpt2w=$(GetConfigOption "gpt2w" "$ctrl_file")
-    [ -z "$gpt2w" -a "$trop_model" = "GPT2w" ] && gpt2w="$TABLE_DIR/gpt2_1wA.grd" && gpt2w_args="--gpt $gpt2w"
+    [ -z "$gpt2w" -a "$trop_model" = "GPT2w" ] && table_args+=(--gpt "$table_dir/gpt2_1wA.grd")
 
-    local oro_args=""
     local oro=$(GetConfigOption "orography" "$ctrl_file")
-    [ -z "$oro" -a "$trop_model" = "VMF1" ] && oro="$TABLE_DIR/orography_ell" && oro_args="--ell $oro"
-
-    local table_args="$atx_args $chn_args $blq_args $gpt2w_args $oro_args"
-    echo "$table_args"
+    [ -z "$oro" -a "$trop_model" = "VMF1" ] && table_args+=(--ell "$table_dir/orography_ell")
     return 0
 }
 
@@ -222,9 +224,9 @@ PrepareProducts() { # purpose: prepare products in working directory
 
     [ -d $products_dir ] || mkdir -p "$products_dir"
 
-    grep "^ppp_ar\s*=\s*yes" "$ctrl_file" > /dev/null 2>&1
+    grep "^ppp_ar[[:space:]]*=[[:space:]]*yes" "$ctrl_file" > /dev/null 2>&1
     local AR=$?
-    local product_src=$(sed -n "/^src/ {s/src\s*=\s*//; s/\s*\;.*$//; p}" "$ctrl_file")
+    local product_src=$(GetConfigOption "src" "$ctrl_file")
     # [ -z "$product_src" ] && echo -e "$MSGERR $ctrl_file: [product] src: not set " && return 1
     [ -z "$product_src" ] && product_src="precise"  # default source
     local ydoy=($(mjd2ydoy $mjd_mid))
@@ -242,7 +244,7 @@ PrepareProducts() { # purpose: prepare products in working directory
 
     # VMF1 grids
     local vmf_args=""
-    grep '^trop\s*=\s*VMF1' ${ctrl_file} 2>&1 > /dev/null
+    grep '^trop[[:space:]]*=[[:space:]]*VMF1' "$ctrl_file" > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         local vmf_spliced=${products_dir}/VMFG_${ydoy[0]}${ydoy[1]}
         DownloadVmf1Grids $mjd_mid ${products_dir} ${vmf_spliced} || return 1

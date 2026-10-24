@@ -30,9 +30,8 @@ Other programs in the PPPx software package include:
 ## Table of Contents
 - [Documentation](#documentation)
 - [Installation](#installation)
-    - [Linux](#linux)
-    - [Windows](#windows)
-    - [macOS](#macos)
+    - [Quick install](#quick-install)
+    - [Platform requirements](#platform-requirements)
 - [Usage](#usage)
 - [Example](#example)
 - [Contributing](#contributing)
@@ -40,13 +39,28 @@ Other programs in the PPPx software package include:
 
 ## Documentation
 
-The user manual is available as a PDF, attached to every release:
-[**PPPx User Manual**](https://github.com/pppx-dev/pppx/releases/latest/download/pppx-manual.pdf).
+The user manual is available online: [**PPPx Documentation**](https://pppx.dev/docs).
 
 
 ## Installation
 
-### Linux
+### Quick install
+
+Run the following command in a terminal (Linux/macOS) or in **Git Bash** / **MSYS2** (Windows):
+
+```shell
+curl -fsSL https://raw.githubusercontent.com/pppx-dev/pppx/main/install.sh | bash
+```
+
+The installer downloads the latest `pppx` executable for your platform, the `table` files
+and the auxiliary scripts into a single folder (`~/.pppx/` on Linux/macOS or
+`C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx` on Windows), and adds its `bin`
+folder to your `PATH`. Please check the [platform requirements](#platform-requirements)
+below first, and restart your terminal after installation.
+
+### Platform requirements
+
+#### Linux
 
 This application is distributed as an [AppImage](https://appimage.org/), making it portable
 across most modern Linux distributions. Specifically, `pppx` is built on Ubuntu 20.04 and
@@ -69,51 +83,27 @@ It is compatible with the following distributions (and any of their derivatives)
 > You can easily check your system's `glibc` version by running `ldd --version` in your terminal.
 
 
-Clone the repository and run the installer from its root folder:
-
-```shell
-git clone --depth 1 https://github.com/pppx-dev/pppx.git
-cd pppx
-./install.sh
-```
-
-The installer downloads the latest `pppx` executable, installs both `pppx` and the
-wrapper script `pppx.sh` to `~/.local/bin`, and configures `pppx.sh` to use the
-`table` files in the cloned repository. Keeping the repository is recommended, as it
-provides the `table` files and examples used by `pppx`.
-
-
-### Windows
+#### Windows
 
 The easiest way to run `pppx` on Windows is via the Windows Subsystem for Linux (WSL).
 However, `pppx` can also run natively on Windows using PowerShell, Command Prompt (cmd.exe)
 or Git Bash.
 
 
-Clone the repository, then run the installer from its root folder in PowerShell. It will
-download the executable, fetch the required DLLs, and add the installation folder
-(`C:\Users\<YOUR_USER_NAME>\AppData\Local\Programs\PPPx`) to your user `PATH`:
-
-```PowerShell
-git clone --depth 1 https://github.com/pppx-dev/pppx.git
-cd pppx
-.\install.ps1
-```
-The installer also installs and configures the wrapper script `pppx.sh` (pointing it at
-the `table` folder in the cloned repository). While `pppx.sh` cannot run in PowerShell or
-cmd.exe, you can run it from **Git Bash**, which is bundled with [Git for Windows](https://git-scm.com/download/win)
-(the same tool used for `git clone`). Product downloads rely on `curl`, which Git Bash
-provides:
+The installer runs in **Git Bash**, which is bundled with [Git for Windows](https://git-scm.com/download/win),
+or in [MSYS2](https://www.msys2.org/).
+It also fetches the required DLLs and adds the `bin` folder to your user `PATH` and your
+`~/.bashrc`, so `pppx` works in PowerShell, cmd.exe, Git Bash and MSYS2. While `pppx.sh` cannot run in PowerShell or
+cmd.exe, you can run it from Git Bash or MSYS2:
 
 ```shell
-# In Git Bash
 pppx.sh -c pppx.ini rinex/ZIM200CHE_R_20221000000_01D_30S_MO.rnx
 ```
 
-> Note: You must restart PowerShell, cmd.exe, or Git Bash after installation.
+> Note: You must restart PowerShell, cmd.exe, Git Bash, or MSYS2 after installation.
 
 
-### macOS
+#### macOS
 
 `pppx` supports only Apple silicon Macs running a macOS version newer than Monterey.
 
@@ -125,27 +115,10 @@ If you do not have [Homebrew](https://brew.sh/) on your Mac, please install it f
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-`pppx` is linked against the latest `ceres-solver` library, so make sure the
-latest version is installed on your Mac as well. Run the following command in
-the Terminal application:
-
-```shell
-brew install ceres-solver
-```
-
-
-Clone the repository and run the installer from its root folder in the Terminal:
-
-```shell
-git clone --depth 1 https://github.com/pppx-dev/pppx.git
-cd pppx
-./install.sh
-```
-
-The installer downloads the latest `pppx` executable, bypasses Apple's quarantine
-security check, installs both `pppx` and the wrapper script `pppx.sh` to `~/.local/bin`,
-and configures `pppx.sh` to use the `table` files in the cloned repository. Keeping the
-repository is recommended, as it provides the `table` files and examples used by `pppx`.
+`pppx` is linked against the latest `ceres-solver` library from Homebrew. If `pppx`
+cannot load it, the installer runs `brew install ceres-solver` for you, which installs
+or upgrades it. The installer also removes Apple's quarantine attribute from `pppx`, so
+macOS does not block it.
 
 
 ## Usage
@@ -172,7 +145,7 @@ pppx -c pppx.ini rinex/ZIM200CHE_R_20221000000_01D_30S_MO.rnx
 pppx -c pppx.ini rinex/ZIM200CHE_R_20221000000_01D_30S_MO.rnx rinex/ZIMM00CHE_R_20221000000_01D_30S_MO.rnx
 ```
 
-To simplify GNSS data processing, the script `scripts/pppx.sh` is provided. It
+To simplify GNSS data processing, the wrapper script `pppx.sh` is provided. It
 automatically downloads the necessary products (e.g., SP3, CLK, OBX, BIA, ERP, BRDC, GIM, VMF1)
 according to the configuration and then invokes `pppx`. Currently, it supports
 only the operational products from [CODE](http://ftp.aiub.unibe.ch/CODE/).
@@ -186,11 +159,10 @@ pppx -x ppp > pppx.ini   # options: spp/ppp/rtk/tdp
 pppx.sh -c pppx.ini rinex/ZIM200CHE_R_20221000000_01D_30S_MO.rnx
 ```
 
-> **NOTE**: `pppx.sh` is installed and configured automatically by the installer
-(`install.sh` on Linux/macOS, `install.ps1` on Windows), pointing it at the `table`
-folder in your cloned repository, so `pppx.sh -c ...` works out of the box. It runs
-natively on Linux and macOS, and on Windows via Git Bash. It requires only `curl` and
-standard Unix tools, which are available by default on these platforms.
+> **NOTE**: `pppx.sh` is installed automatically by the installer and uses the `table`
+folder next to its `bin` folder (`~/.pppx/table`), so `pppx.sh -c ...` works out of the box.
+It runs natively on Linux and macOS, and on Windows via Git Bash or MSYS2. It requires
+only `curl` and standard Unix tools, which are available by default on these platforms.
 
 
 ### Input
@@ -198,7 +170,7 @@ standard Unix tools, which are available by default on these platforms.
 1. Configuration file: [pppx.ini](pppx.ini)
 2. GNSS observations: RINEX files
 3. Satellite products: Broadcast ephemeris or precise products, specified in `pppx.ini`
-4. Table files: Provided in the [table](table/) directory, specified in `pppx.ini`
+4. Table files: Provided in the [table](table/) directory (installed to `~/.pppx/table`), specified in `pppx.ini`
 
 
 ### Output
@@ -219,12 +191,15 @@ required, and it runs on any platform.
 
 #### With Python
 
+The script `plot_ppppos.py` is installed next to `pppx` and requires Python 3 with
+`numpy`, `pandas` and `matplotlib` (`pip install numpy pandas matplotlib`).
+
 ```shell
 # To plot position estimates only
-python scripts/plot_ppppos.py pos_file
+plot_ppppos.py pos_file
 
 # To plot position, receiver clock, and ZTD estimates
-python scripts/plot_ppppos.py pos_file -a
+plot_ppppos.py pos_file -a
 
 # -a  Plot receiver position, clock, and ZTD estimates
 # -i  Interactive mode
