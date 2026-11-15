@@ -51,8 +51,8 @@ readonly CODE_HOST="https://www.aiub.unibe.ch/download/CODE"
 ######################################################################
 main()
 {
-    CheckCmdArgs "$@" || return 1  # set: config rnxobs rnxbas
     CheckExecutables || return 1
+    CheckCmdArgs "$@" || return 1  # set: config rnxobs rnxbas
     if [ ! -d "$TABLE_DIR" ]; then
         echo -e "$MSGERR no such table directory: $TABLE_DIR (please re-run the installer)"
         return 1
@@ -75,14 +75,22 @@ main()
 
 CheckCmdArgs() { # purpose: chech whether command line arguments are right
                  # usage  : CheckCmdArgs "$@"
-    # [ $# -ne 2 -a $# -ne 3 ] && PPPx_Help && return 1
-
     local positional=()
     while [[ $# -gt 0 ]]; do
         case "$1" in
         -c | --cfg )
             config="$2"
             shift 2
+            ;;
+        -x )
+            local mode="$2"
+            if [ -z "$mode" ] || [[ "$mode" == -* ]]; then
+                echo -e "$MSGERR -x requires a mode: spp/ppp/rtk/tdp" >&2
+                return 1
+            else
+                pppx -x "$mode"
+                exit $?
+            fi
             ;;
         -* )
             PPPx_Help
